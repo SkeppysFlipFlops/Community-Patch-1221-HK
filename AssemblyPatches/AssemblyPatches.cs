@@ -1,6 +1,6 @@
 using UnityEngine;
 using MonoMod;
-using System.Reflection;
+
 
 #pragma warning disable CS0626
 
@@ -10,7 +10,7 @@ namespace CommunityPatch
     [MonoModPatch("global::GameManager")]
     public class GameManagerPatch : global::GameManager
     {
-
+        private TimerHelper timerHelper; 
         private void OnGUI()
         {
             if (this.GetSceneNameString() == Constants.MENU_SCENE)
@@ -74,14 +74,9 @@ namespace CommunityPatch
         {
             errorLogging("asdasdasd");
             orig_Start();
-            On.GameManager.SetState += (orig,state) =>
-            {
-                orig(state)
-            }
+            timerHelper = new();
+            timerHelper.Init(); 
         }
-        private void UpdateTimer()
-        {
 
-        }
     }
 }

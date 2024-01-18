@@ -10,6 +10,7 @@
 	<PackageReference Include="MonoMod" Version="22.7.31.1">
 	  <IncludeAssets>all</IncludeAssets>
 	</PackageReference>
+	<PackageReference Include="MonoMod.RuntimeDetour.HookGen" Version="22.7.31.1" />
   </ItemGroup>
   <ItemGroup>
 	<Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
