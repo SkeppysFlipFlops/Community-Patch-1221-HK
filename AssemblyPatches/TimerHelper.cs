@@ -8,7 +8,7 @@ namespace CommunityPatch
         float UnpauseTime = 0f;
         //float PauseTime = 0f;
         bool wasPaused = true;
-        public float getTime()
+        public float GetTime()
         {
             return TotalTime + Time.time - UnpauseTime;
         }
@@ -22,7 +22,7 @@ namespace CommunityPatch
             wasPaused = false;
             UnpauseTime = Time.time;
         }
-        public void updateTimer(bool nowPaused)
+        public void Update(bool nowPaused)
         {
             if (!nowPaused && wasPaused)
             {
@@ -46,7 +46,12 @@ namespace CommunityPatch
         public void Init() {
             timer = new Timer();
 
-            On.GameManager.StartNewGame += (orig, self, permadeathmode) => { orig(self, permadeathmode); timer.resetTimer(); };
+            On.GameManager.StartNewGame += (orig, self, param) => { orig(self, param); timer.resetTimer(); };
+            On.GameManager.SetState += (orig, self, param) => { orig(self, param); CheckTimer(); };
+        }
+        public void CheckTimer()
+        {
+            timer.Update(true);//TODO: check for load
         }
     };
 }
