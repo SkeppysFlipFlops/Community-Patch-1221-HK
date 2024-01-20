@@ -10,15 +10,11 @@
 	<PackageReference Include="MonoMod" Version="22.7.31.1">
 	  <IncludeAssets>all</IncludeAssets>
 	</PackageReference>
-	<PackageReference Include="MonoMod.RuntimeDetour.HookGen" Version="22.7.31.1" />
   </ItemGroup>
   <ItemGroup>
 	<Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
 	  <HintPath>../vanilla/Assembly-CSharp.dll</HintPath>
 	  <SpecificVersion>False</SpecificVersion>
-	</Reference>
-	<Reference Include="MMHOOK_Assembly-CSharp">
-	  <HintPath>../vanilla/MMHOOK_Assembly-CSharp.dll</HintPath>
 	</Reference>
 	<Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
 	  <HintPath>../vanilla/UnityEngine.dll</HintPath>
