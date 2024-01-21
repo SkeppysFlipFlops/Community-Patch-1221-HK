@@ -1,11 +1,13 @@
-﻿
-using GlobalEnums;
+﻿using GlobalEnums;
 using System.Reflection;
 using System;
 using UnityEngine;
+using MonoMod;
+using MonoMod.RuntimeDetour;
+using MonoMod.RuntimeDetour.HookGen;
 namespace CommunityPatch
 {
-    internal static class Timer
+    internal static class Timer2
     {
         private static readonly FieldInfo TeleportingFieldInfo = typeof(CameraController).GetField(
             "teleporting",
@@ -15,36 +17,47 @@ namespace CommunityPatch
             "tilemapDirty",
             BindingFlags.NonPublic | BindingFlags.Instance
         );
-
-        private static bool timeStart = true;
-        private static bool timeEnd = false;
-        private static float inGameTime = 0f;
+        private static bool TimeStart = true;
+        private static bool TimeEnd = false;
+        private static bool LastFramePaused = true;
+        private static float InGameTime
+        {
+            get
+            {
+                if (LastFramePaused)
+                {
+                    return RoomEnterTime;
+                }
+                return RoomEnterTime + Time.unscaledTime - RoomEnterTimestamp;
+            }
+        }
         private static readonly int minorVersion = int.Parse(Constants.GAME_VERSION.Substring(2, 1));
         private static float RoomEnterTime = 0f;
+        private static float RoomEnterTimestamp= 0f;
         public static string ShowOnUI = "";
         public static string FormattedTime
         {
             get
             {
-                if (inGameTime == 0)
+                if (InGameTime == 0)
                 {
                     return string.Empty;
                 }
-                else if (inGameTime < 60)
+                else if (InGameTime < 60)
                 {
-                    return inGameTime.ToString("F3");
+                    return InGameTime.ToString("F3");
                 }
-                else if (inGameTime < 3600)
+                else if (InGameTime < 3600)
                 {
-                    int minute = (int)(inGameTime / 60);
-                    float second = inGameTime - minute * 60;
+                    int minute = (int)(InGameTime / 60);
+                    float second = InGameTime - minute * 60;
                     return $"{minute}:{second.ToString("F3").PadLeft(5, '0')}";
                 }
                 else
                 {
-                    int hour = (int)(inGameTime / 3600);
-                    int minute = (int)((inGameTime - hour * 3600) / 60);
-                    float second = inGameTime - hour * 3600 - minute * 60;
+                    int hour = (int)(InGameTime / 3600);
+                    int minute = (int)((InGameTime - hour * 3600) / 60);
+                    float second = InGameTime - hour * 3600 - minute * 60;
                     return $"{hour}:{minute.ToString().PadLeft(2, '0')}:{second.ToString("F3").PadLeft(5, '0')}";
                 }
             }
@@ -52,37 +65,64 @@ namespace CommunityPatch
 
         private static GameState lastGameState;
         private static bool lookForTeleporting;
+        public static void Init()
+        {
+            //reset timer?
+            //On.GameManager.StartNewGame += (orig, self, param) => { orig(self, param); ResetTimer(); }; //1 Param
+
+            On.UIManager.SetState += (orig, self, param) => { orig(self, param); CheckTimer(); }; //1 Param
+            On.GameManager.SetState += (orig, self, param) => { orig(self, param); CheckTimer(); }; //1 Param
+            On.GameManager.UpdateSceneName += (orig, self) => { orig(self); CheckTimer(); }; //No Param
+            CommunityPatch.AddLine("loaded hooks");
+        }
         public static void ResetTimer()
         {
-            timeStart= false;
-            timeEnd= false;
-            inGameTime = 0f;
+            //TODO FIX
+            TimeStart= false;
+            TimeEnd= false;
+            //InGameTime = 0f;
         }
         public static void StartTimer()
         {
-            timeStart = true;
+            TimeStart = true;
         }
-        public static void Tick(GameManager gm)
+        private static void TickedGameplay()
         {
-            Checktimer(gm);
+            if (LastFramePaused)
+            {
+                CommunityPatch.AddLine("ticked Gameplay");
+                RoomEnterTimestamp = Time.unscaledTime;
+            }
+            LastFramePaused = false;
         }
-        public static void Checktimer(GameManager gameManager)//, StringBuilder infoBuilder)
+        private static void TickedLoading()
         {
+            if (!LastFramePaused)
+            {
+                CommunityPatch.AddLine("ticked Load");
+                RoomEnterTime += Time.unscaledTime - RoomEnterTimestamp;
+            }
+            RoomEnterTimestamp = Time.unscaledTime;
+            LastFramePaused = true;
+        }
+        public static void CheckTimer()
+        {
+            GameManager gameManager = GameManager.instance;
             string currentScene = gameManager.sceneName;
             string nextScene = gameManager.nextSceneName;
             GameState gameState = gameManager.gameState;
 
-            if (!timeStart && (nextScene.Equals("Tutorial_01", StringComparison.OrdinalIgnoreCase) && gameState == GameState.ENTERING_LEVEL ||
+            if (!TimeStart && (nextScene.Equals("Tutorial_01", StringComparison.OrdinalIgnoreCase) && gameState == GameState.ENTERING_LEVEL ||
                                nextScene is "GG_Vengefly_V" or "GG_Boss_Door_Entrance" or "GG_Entrance_Cutscene"))
             {
-                timeStart = true;
-                timeEnd = false;
+                TimeStart = true;
+                TimeEnd = false;
             }
 
-            if (timeStart && !timeEnd && (nextScene.StartsWith("Cinematic_Ending", StringComparison.OrdinalIgnoreCase) ||
+            if (TimeStart && !TimeEnd && (nextScene.StartsWith("Cinematic_Ending", StringComparison.OrdinalIgnoreCase) ||
                                           nextScene == "GG_End_Sequence"))
             {
-                timeEnd = true;
+                TimeEnd = true;
             }
 
             bool timePaused = false;
@@ -123,35 +163,14 @@ namespace CommunityPatch
 
             lastGameState = gameState;
 
-            if (timeStart && !timePaused && !timeEnd)
+            if (TimeStart && !timePaused && !TimeEnd)
             {
-                inGameTime += Time.unscaledDeltaTime;
+                TickedGameplay();
             }
             else
             {
-                if (RoomEnterTime != inGameTime)
-                {
-                    ShowOnUI = (inGameTime - RoomEnterTime).ToString();
-                    RoomEnterTime = inGameTime;
-                }
+                TickedLoading();
             }
-
-            /*List<string> result = new();
-            if (!string.IsNullOrEmpty(gameManager.sceneName) && ConfigManager.ShowSceneName)
-            {
-                result.Add(gameManager.sceneName);
-            }
-
-            if (true)//inGameTime > 0 && ConfigManager.ShowTime)
-            {
-                result.Add(FormattedTime);
-            }
-
-            string resultString = StringUtils.Join("  ", result);
-            if (!string.IsNullOrEmpty(resultString))
-            {
-                infoBuilder.AppendLine(resultString);
-            }*/
         }
     }
 }

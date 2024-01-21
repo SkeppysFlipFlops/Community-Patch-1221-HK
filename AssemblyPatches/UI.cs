@@ -1,15 +1,23 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing.Text;
+using System.Linq;
+using System.Text;
 using UnityEngine;
-using MonoMod;
-#pragma warning disable CS0626
+using static System.Net.Mime.MediaTypeNames;
 
 namespace CommunityPatch
 {
-
-    [MonoModPatch("global::GameManager")]
-    public class GameManagerPatch : global::GameManager
+    internal static class UI
     {
-        private string error = "";
-        private void OnGUI()
+        private static readonly Vector2 __SIZE = new(200, 200);
+        public class TextBoxData(string text, int x, int y, int fontSize)
+        {
+            public string text = text;
+            public int x = x, y = y;
+            public int fontSize = fontSize;
+        }
+        public static void ShowTextBox(TextBoxData data)
         {
             var oldBackgroundColor = GUI.backgroundColor;
             var oldContentColor = GUI.contentColor;
@@ -23,14 +31,12 @@ namespace CommunityPatch
                 Quaternion.identity,
                 new Vector3(Screen.width / 1920f, Screen.height / 1080f, 1f)
             );
-            string WarningText = "beta patch. , Time: " + Timer.FormattedTime + " " + error;
-
             GUI.Label(
-                new Rect(20f, 20f, 200f, 200f),
-                WarningText,
+                position: new Rect(new(data.x,data.y),__SIZE),
+                text: data.text,
                 new GUIStyle
                 {
-                    fontSize = 30,
+                    fontSize = data.fontSize,
                     normal = new GUIStyleState
                     {
                         textColor = Color.white,
@@ -42,21 +48,6 @@ namespace CommunityPatch
             GUI.contentColor = oldContentColor;
             GUI.color = oldColor;
             GUI.matrix = oldMatrix;
-
-        }
-
-
-        private void errorLogging(string message)
-        {
-            error += message;
-        }
-
-        public extern void orig_Start();
-
-        public void Start()
-        {
-            orig_Start();
-            errorLogging("test2");
         }
     }
 }
