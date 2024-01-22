@@ -1,5 +1,4 @@
-﻿
-using GlobalEnums;
+﻿using GlobalEnums;
 using System.Reflection;
 using System;
 using UnityEngine;
@@ -15,18 +14,18 @@ namespace CommunityPatch
             "tilemapDirty",
             BindingFlags.NonPublic | BindingFlags.Instance
         );
-
-        private static bool timeStart = false;
-        private static bool timeEnd = false;
-        private static float inGameTime = 0f;
-        private static readonly int minorVersion = int.Parse(Constants.GAME_VERSION.Substring(2, 1));
+        private static string nextScene ="";
+        public static bool TimeStart = false;
+        public static bool TimeEnd = false;
+        private static float InGameTime = 0f;
+        private static readonly int MinorVersion = int.Parse(Constants.GAME_VERSION.Substring(2, 1));
         private static float RoomEnterTime = 0f;
         public static string ShowOnUI = "";
         public static string FormattedTime
         {
             get
             {
-                return GetFormattedTime(inGameTime);
+                return GetFormattedTime(InGameTime);
             }
         }
 
@@ -34,13 +33,13 @@ namespace CommunityPatch
         private static bool lookForTeleporting;
         public static void ResetTimer()
         {
-            timeStart= false;
-            timeEnd= false;
-            inGameTime = 0f;
+            TimeStart= false;
+            TimeEnd= false;
+            InGameTime = 0f;
         }
         public static void StartTimer()
         {
-            timeStart = true;
+            TimeStart = true;
         }
         public static void Checktimer()//, StringBuilder infoBuilder)
         {
@@ -49,17 +48,17 @@ namespace CommunityPatch
             string nextScene = gameManager.nextSceneName;
             GameState gameState = gameManager.gameState;
 
-            if (!timeStart && (nextScene.Equals("Tutorial_01", StringComparison.OrdinalIgnoreCase) && gameState == GameState.ENTERING_LEVEL ||
+            if (!TimeStart && (nextScene.Equals("Tutorial_01", StringComparison.OrdinalIgnoreCase) && gameState == GameState.ENTERING_LEVEL ||
                                nextScene is "GG_Vengefly_V" or "GG_Boss_Door_Entrance" or "GG_Entrance_Cutscene"))
             {
-                timeStart = true;
-                timeEnd = false;
+                TimeStart = true;
+                TimeEnd = false;
             }
 
-            if (timeStart && !timeEnd && (nextScene.StartsWith("Cinematic_Ending", StringComparison.OrdinalIgnoreCase) ||
+            if (TimeStart && !TimeEnd && (nextScene.StartsWith("Cinematic_Ending", StringComparison.OrdinalIgnoreCase) ||
                                           nextScene == "GG_End_Sequence"))
             {
-                timeEnd = true;
+                TimeEnd = true;
             }
 
             bool timePaused = false;
@@ -91,7 +90,7 @@ namespace CommunityPatch
                     || uiState != UIState.PLAYING &&
                     (loadingMenu || uiState != UIState.PAUSED && (!string.IsNullOrEmpty(nextScene) || currentScene == "_test_charms")) &&
                     nextScene != currentScene
-                    || minorVersion < 3 && (bool)TilemapDirtyFieldInfo.GetValue(gameManager);
+                    || MinorVersion < 3 && (bool)TilemapDirtyFieldInfo.GetValue(gameManager);
             }
             catch
             {
@@ -100,16 +99,16 @@ namespace CommunityPatch
 
             lastGameState = gameState;
 
-            if (timeStart && !timePaused && !timeEnd)
+            if (TimeStart && !timePaused && !TimeEnd)
             {
-                inGameTime += Time.unscaledDeltaTime;
+                InGameTime += Time.unscaledDeltaTime;
             }
             else
             {
-                if (RoomEnterTime != inGameTime)
+                if (RoomEnterTime != InGameTime && nextScene != currentScene)
                 {
-                    ShowOnUI = GetFormattedTime(inGameTime - RoomEnterTime);
-                    RoomEnterTime = inGameTime;
+                    ShowOnUI = GetFormattedTime(InGameTime - RoomEnterTime);
+                    RoomEnterTime = InGameTime;
                 }
             }
         }

@@ -1,12 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing.Drawing2D;
-using System.Drawing.Text;
-using System.Linq;
-using System.Text;
 using UnityEngine;
-using static MonoMod.InlineRT.MonoModRule;
 
 namespace CommunityPatch
 {
@@ -15,7 +9,7 @@ namespace CommunityPatch
         private static readonly Color WHITE = new(1, 1, 1, 1);
         private static readonly Vector2 __SIZE = new(200, 200);
         private static bool ConfigMenuOpen = false;
-        public static List<Selector> Selectors = [];
+        public static List<Selector> Selectors;
         private static int row = 0;
         private static bool selecting = false;
 
@@ -105,11 +99,11 @@ namespace CommunityPatch
         public static void Init()
         {
             KeyValuePair<KeyCodeRef, string>[] controlsRef = CommunityPatch.Config.ControlRef();
-
+            Selectors = [];
             for (int i = 0; i < controlsRef.Length; i++)
             {
-                int y = (i * 70) + 30;
-                Selectors.Add(new Selector(controlsRef[i].Value, 960, y, 30, WHITE, controlsRef[i].Key));
+                int y = (i * 70) + 300;
+                Selectors.Add(new Selector(controlsRef[i].Value, 400, y, 30, Color.blue, controlsRef[i].Key));
             }
         }
         public static void ShowGUI()
@@ -131,8 +125,8 @@ namespace CommunityPatch
                 if (ConfigMenuOpen)
                 {
                     ShowTextBox(new TextBoxData(
-                        "Press enter while option selected to bind a key. escape to unbind.",
-                        960, 50, 30,
+                        "Press tab while option selected to bind a key. escape to unbind.",
+                        400, 50, 30,
                         Color.white));
                     foreach (Selector selec in Selectors)
                     {
@@ -174,14 +168,14 @@ namespace CommunityPatch
                     selecting = false;
                     if (kcode == KeyCode.Escape)
                     {
-                        if (row != 4)
+                        if (row != 5)
                         {
                             Selectors[row].keycode.keycode = KeyCode.None;
                         }
-                        else
-                        {
-                            Selectors[row].keycode.keycode = kcode;
-                        }
+                    }
+                    else
+                    {
+                        Selectors[row].keycode.keycode = kcode;
                     }
                 }
             }
@@ -189,15 +183,15 @@ namespace CommunityPatch
         private static void MoveUpDown()
         {
             Selectors[row].selected = false;
-            if (Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.W))
             {
                 row -= 1;
-                if (row < 0) { row = Selectors.Count; }
+                if (row < 0) { row = Selectors.Count - 1; }
             }
-            else if (Input.GetKey(KeyCode.S))
+            else if (Input.GetKeyDown(KeyCode.S))
             {
                 row += 1;
-                if (row > Selectors.Count)
+                if (row >= Selectors.Count)
                 {
                     row = 0;
                 }
@@ -207,7 +201,7 @@ namespace CommunityPatch
         public static void Update()
         {
             //open config menu if pressed bind
-            if (DoAction(CommunityPatch.Config.OpenConfigMenu.keycode,
+            if (ControlsHelper.ShouldDoAction(CommunityPatch.Config.OpenConfigMenu.keycode,
                 CommunityPatch.Config.OpenConfigMenuModifier.keycode))
                 ConfigMenuOpen = !ConfigMenuOpen;
 
@@ -215,14 +209,9 @@ namespace CommunityPatch
 
             if (selecting) ChooseKey();
 
-            if (Input.GetKeyDown(KeyCode.Return)) selecting = true;
+            if (Input.GetKeyDown(KeyCode.Tab)) selecting = true;
 
             if (!selecting) MoveUpDown();
-        }
-        private static bool DoAction(KeyCode button, KeyCode modifier = KeyCode.None)
-        {
-            return Input.GetKeyDown(button) && (Input.GetKey(modifier) || modifier == KeyCode.None);
-                
         }
     }
 }

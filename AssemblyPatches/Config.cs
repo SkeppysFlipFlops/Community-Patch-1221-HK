@@ -20,7 +20,17 @@ namespace CommunityPatch
         /// <summary>
         /// optional modifier key so if you fafinger it you dont reset
         /// </summary>
-        public KeyCodeRef ResetBindModifierKey = new();
+        public KeyCodeRef ResetBindModifier = new();
+
+        /// <summary>
+        /// reset bind, will not work if the reset bind modifier key is bound and not pressed.
+        /// </summary>
+        public KeyCodeRef StartBind = new();
+
+        /// <summary>
+        /// optional modifier key so if you fafinger it you dont reset
+        /// </summary>
+        public KeyCodeRef StartBindModifier = new();
 
         /// <summary>
         /// holds left stick left
@@ -49,7 +59,9 @@ namespace CommunityPatch
 
         public KeyValuePair<KeyCodeRef, string>[] ControlRef() => [
             new(ResetBind, "Reset Bind"),
-            new(ResetBindModifierKey, "Reset Bind Modifier"),
+            new(ResetBindModifier, "Reset Bind Modifier"),
+            new(StartBind, "Start Bind"),
+            new(StartBindModifier, "Start Bind Modifier"),
             new(LAnalogLeft, "Left Analog Left"),
             new(LAnalogRight, "Left Analog Right"),
             new(RAnalogUp, "Right Analog Up"),
@@ -80,6 +92,11 @@ namespace CommunityPatch
             Config conf = new();
             SaveBindsToFile(conf);
             return conf;
+        }
+
+        public static bool ShouldDoAction(KeyCode button, KeyCode modifier = KeyCode.None)
+        {
+            return Input.GetKeyDown(button) && (Input.GetKey(modifier) || modifier == KeyCode.None);
         }
 
         public static void SaveBindsToFile(Config conf)

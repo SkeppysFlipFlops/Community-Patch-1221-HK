@@ -2,9 +2,6 @@
 using System.Reflection;
 using System;
 using UnityEngine;
-using MonoMod;
-using MonoMod.RuntimeDetour;
-using MonoMod.RuntimeDetour.HookGen;
 namespace CommunityPatch
 {
     internal static class Timer2
@@ -17,7 +14,7 @@ namespace CommunityPatch
             "tilemapDirty",
             BindingFlags.NonPublic | BindingFlags.Instance
         );
-        private static bool TimeStart = false;
+        public static bool TimeStart = false;
         private static bool TimeEnd = false;
         private static bool LastFramePaused = true;
         public static string FormattedTime
@@ -72,10 +69,11 @@ namespace CommunityPatch
         }
         public static void ResetTimer()
         {
-            //TODO FIX
-            TimeStart= false;
-            TimeEnd= false;
-            //InGameTime = 0f;
+            TimeStart = false;
+            TimeEnd = false;
+            RoomEnterTime = 0f;
+            RoomEnterTimestamp = 0f;
+            LastFramePaused = true;
         }
         public static void StartTimer()
         {
@@ -94,7 +92,8 @@ namespace CommunityPatch
         {
             if (!LastFramePaused)
             {
-                RoomTime  = Time.unscaledTime - RoomEnterTimestamp;
+                if(Time.unscaledTime - RoomEnterTimestamp != 0)
+                RoomTime = Time.unscaledTime - RoomEnterTimestamp;
                 CommunityPatch.AddLine("ticked Load");
                 RoomEnterTime += Time.unscaledTime - RoomEnterTimestamp;
             }
