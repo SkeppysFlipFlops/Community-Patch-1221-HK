@@ -16,7 +16,7 @@ namespace CommunityPatch
             BindingFlags.NonPublic | BindingFlags.Instance
         );
 
-        private static bool timeStart = true;
+        private static bool timeStart = false;
         private static bool timeEnd = false;
         private static float inGameTime = 0f;
         private static readonly int minorVersion = int.Parse(Constants.GAME_VERSION.Substring(2, 1));
@@ -26,27 +26,7 @@ namespace CommunityPatch
         {
             get
             {
-                if (inGameTime == 0)
-                {
-                    return string.Empty;
-                }
-                else if (inGameTime < 60)
-                {
-                    return inGameTime.ToString("F3");
-                }
-                else if (inGameTime < 3600)
-                {
-                    int minute = (int)(inGameTime / 60);
-                    float second = inGameTime - minute * 60;
-                    return $"{minute}:{second.ToString("F3").PadLeft(5, '0')}";
-                }
-                else
-                {
-                    int hour = (int)(inGameTime / 3600);
-                    int minute = (int)((inGameTime - hour * 3600) / 60);
-                    float second = inGameTime - hour * 3600 - minute * 60;
-                    return $"{hour}:{minute.ToString().PadLeft(2, '0')}:{second.ToString("F3").PadLeft(5, '0')}";
-                }
+                return GetFormattedTime(inGameTime);
             }
         }
 
@@ -62,12 +42,9 @@ namespace CommunityPatch
         {
             timeStart = true;
         }
-        public static void Tick(GameManager gm)
+        public static void Checktimer()//, StringBuilder infoBuilder)
         {
-            Checktimer(gm);
-        }
-        public static void Checktimer(GameManager gameManager)//, StringBuilder infoBuilder)
-        {
+            GameManager gameManager = GameManager.instance;
             string currentScene = gameManager.sceneName;
             string nextScene = gameManager.nextSceneName;
             GameState gameState = gameManager.gameState;
@@ -131,27 +108,34 @@ namespace CommunityPatch
             {
                 if (RoomEnterTime != inGameTime)
                 {
-                    ShowOnUI = (inGameTime - RoomEnterTime).ToString();
+                    ShowOnUI = GetFormattedTime(inGameTime - RoomEnterTime);
                     RoomEnterTime = inGameTime;
                 }
             }
-
-            /*List<string> result = new();
-            if (!string.IsNullOrEmpty(gameManager.sceneName) && ConfigManager.ShowSceneName)
+        }
+        private static string GetFormattedTime(float time)
+        {
+            if (time == 0)
             {
-                result.Add(gameManager.sceneName);
+                return string.Empty;
             }
-
-            if (true)//inGameTime > 0 && ConfigManager.ShowTime)
+            else if (time < 60)
             {
-                result.Add(FormattedTime);
+                return time.ToString("F3");
             }
-
-            string resultString = StringUtils.Join("  ", result);
-            if (!string.IsNullOrEmpty(resultString))
+            else if (time < 3600)
             {
-                infoBuilder.AppendLine(resultString);
-            }*/
+                int minute = (int)(time / 60);
+                float second = time - minute * 60;
+                return $"{minute}:{second.ToString("F3").PadLeft(5, '0')}";
+            }
+            else
+            {
+                int hour = (int)(time / 3600);
+                int minute = (int)((time - hour * 3600) / 60);
+                float second = time - hour * 3600 - minute * 60;
+                return $"{hour}:{minute.ToString().PadLeft(2, '0')}:{second.ToString("F3").PadLeft(5, '0')}";
+            }
         }
     }
 }

@@ -10,8 +10,12 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
-# Hollow Knight Assemblies
+# Hollow Knight Assemblies and others
 vanilla/
+*.dll
+*.exe
+*.obj
+socd.conf
 
 # Build results
 [Dd]ebug/

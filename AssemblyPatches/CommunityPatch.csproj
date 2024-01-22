@@ -19,21 +19,21 @@
   </ItemGroup>
   <ItemGroup>
 	<Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-	  <HintPath>../vanilla/Assembly-CSharp.dll</HintPath>
+	  <HintPath>vanilla/Assembly-CSharp.dll</HintPath>
 	  <SpecificVersion>False</SpecificVersion>
 	</Reference>
 	<Reference Include="MMHOOK_Assembly-CSharp">
 	  <HintPath>../vanilla/MMHOOK_Assembly-CSharp.dll</HintPath>
 	</Reference>
 	<Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-	  <HintPath>../vanilla/UnityEngine.dll</HintPath>
+	  <HintPath>vanilla/UnityEngine.dll</HintPath>
 	</Reference>
 	<Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null">
-	  <HintPath>../vanilla/PlayMaker.dll</HintPath>
+	  <HintPath>vanilla/PlayMaker.dll</HintPath>
 	</Reference>
   </ItemGroup>
   <ItemGroup>
-	<Files Include="$(SolutionDir)Vanilla/*" />
+	<Files Include="$(ProjectDir)/Vanilla/*" />
 	<BuildDir Include="$(TargetDir)" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
@@ -41,5 +41,6 @@
 	<Delete Condition="Exists('MONOMODDED_Assembly-CSharp.dll')" Files="MONOMODDED_Assembly-CSharp.dll" />
 	<Exec WorkingDirectory="@(BuildDir)" Command="MonoMod.exe Assembly-CSharp.dll" />
 	<Copy SourceFiles="$(TargetDir)/MONOMODDED_Assembly-CSharp.dll" DestinationFiles="$(SolutionDir)/out/$(Configuration)/Assembly-CSharp.dll" />
+	<Copy SourceFiles="$(SolutionDir)/out/$(Configuration)/Assembly-CSharp.dll" DestinationFiles="C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Assembly-CSharp.dll" />
   </Target>
 </Project>

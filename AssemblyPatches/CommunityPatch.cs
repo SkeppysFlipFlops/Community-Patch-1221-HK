@@ -2,34 +2,39 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 namespace CommunityPatch
 {
     internal static class CommunityPatch
     {
-        private static int messagecount = 0;   
-        private static string checker = DateTime.Now.Hour.ToString() + ":" + DateTime.Now.Minute.ToString("00");
-        private static List<string> DebugLog = [];
+        public static UI.LogList DebugLog { private set; get; } = new();
+        private static int MessageCount = 0;
+        public static Config Config = new();
+
         public static void Init()
         {
+            Config = ControlsHelper.LoadBindsFromFile();
             Timer2.Init();
+            UI.Init();
         }
-        public static void ShowGUI()
+
+
+        public static void Update()
         {
-            UI.ShowTextBox(new UI.TextBoxData("Community Patch BETA, compiled @ " + checker, 20, 20, 30));
-            UI.ShowTextBox(new UI.TextBoxData(string.Join("\n", DebugLog.ToArray()), 500, 300, 30));
-            UI.ShowTextBox(new UI.TextBoxData(Timer.FormattedTime + " | " + Timer2.FormattedTime, 1600, 20, 30));
+            UI.Update();
+            // slowly remove log messages
+            DebugLog.entries.ForEach(entry => { entry.Time -= Time.deltaTime; });
+            DebugLog.entries.RemoveAll(entry => entry.Time < 0);
+
+
         }
-        public static void AddLine(string Line)
+
+        public static void AddLine(string Line, float length = 10)
         {
-            if (DebugLog.Count>= 5)
-            {
-                DebugLog.RemoveAt(0);   
-            }
-            DebugLog.Add(messagecount.ToString() + "|" + Line);
-            messagecount++;
-            if (messagecount >= 5) {
-                messagecount = 0;
-            }
+            MessageCount++;
+            DebugLog.entries.Add(new(MessageCount.ToString() + "|" + Line, length));
+            if (MessageCount >= 5 ) MessageCount = 0;
         }
     }
 }

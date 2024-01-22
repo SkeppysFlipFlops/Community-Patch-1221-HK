@@ -8,17 +8,15 @@ namespace CommunityPatch
     [MonoModPatch("global::GameManager")]
     public class GameManagerPatch : global::GameManager
     {
-        private void OnGUI()
-        {
-            CommunityPatch.ShowGUI();
-        }
+        private void OnGUI() { UI.ShowGUI(); }
 
-        public extern void orig_Start();
+        private void Update() { CommunityPatch.Update(); }
 
         public void Start()
         {
             orig_Start();
             CommunityPatch.Init();
         }
+        public extern void orig_Start();
     }
 }

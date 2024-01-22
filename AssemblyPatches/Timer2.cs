@@ -17,10 +17,17 @@ namespace CommunityPatch
             "tilemapDirty",
             BindingFlags.NonPublic | BindingFlags.Instance
         );
-        private static bool TimeStart = true;
+        private static bool TimeStart = false;
         private static bool TimeEnd = false;
         private static bool LastFramePaused = true;
-        private static float InGameTime
+        public static string FormattedTime
+        {
+            get
+            {
+                return GetFormattedTime(CurrentTime);
+            }
+        }
+        private static float CurrentTime
         {
             get
             {
@@ -34,37 +41,18 @@ namespace CommunityPatch
         private static readonly int minorVersion = int.Parse(Constants.GAME_VERSION.Substring(2, 1));
         private static float RoomEnterTime = 0f;
         private static float RoomEnterTimestamp= 0f;
-        public static string ShowOnUI = "";
-        public static string FormattedTime
+        public static string FormattedRoomTime
         {
             get
             {
-                if (InGameTime == 0)
-                {
-                    return string.Empty;
-                }
-                else if (InGameTime < 60)
-                {
-                    return InGameTime.ToString("F3");
-                }
-                else if (InGameTime < 3600)
-                {
-                    int minute = (int)(InGameTime / 60);
-                    float second = InGameTime - minute * 60;
-                    return $"{minute}:{second.ToString("F3").PadLeft(5, '0')}";
-                }
-                else
-                {
-                    int hour = (int)(InGameTime / 3600);
-                    int minute = (int)((InGameTime - hour * 3600) / 60);
-                    float second = InGameTime - hour * 3600 - minute * 60;
-                    return $"{hour}:{minute.ToString().PadLeft(2, '0')}:{second.ToString("F3").PadLeft(5, '0')}";
-                }
+                return GetFormattedTime(RoomTime);
             }
         }
+        private static float RoomTime = 0;
 
         private static GameState lastGameState;
         private static bool lookForTeleporting;
+
         public static void Init()
         {
             //reset timer?
@@ -73,7 +61,14 @@ namespace CommunityPatch
             On.UIManager.SetState += (orig, self, param) => { orig(self, param); CheckTimer(); }; //1 Param
             On.GameManager.SetState += (orig, self, param) => { orig(self, param); CheckTimer(); }; //1 Param
             On.GameManager.UpdateSceneName += (orig, self) => { orig(self); CheckTimer(); }; //No Param
+            On.GameManager.RefreshTilemapInfo += (orig, self, param) => { orig(self, param); CheckTimer(); }; //1 Param
+            On.InputHandler.StartAcceptingInput += (orig, self) => { orig(self); CheckTimer(); }; //No Param
+            On.InputHandler.StopAcceptingInput += (orig, self) => { orig(self); CheckTimer(); }; //No Param
+            On.InputHandler.StartUIInput += (orig, self) => { orig(self); CheckTimer(); }; //No Param
+            On.InputHandler.StopUIInput += (orig, self) => { orig(self); CheckTimer(); }; //No Param
+            On.HeroController.SetCState += (orig, self, param, param2) => { orig(self, param, param2); CheckTimer(); }; // 2 param
             CommunityPatch.AddLine("loaded hooks");
+            // we r missing Herocontroller.Transitionstate. 
         }
         public static void ResetTimer()
         {
@@ -99,6 +94,7 @@ namespace CommunityPatch
         {
             if (!LastFramePaused)
             {
+                RoomTime  = Time.unscaledTime - RoomEnterTimestamp;
                 CommunityPatch.AddLine("ticked Load");
                 RoomEnterTime += Time.unscaledTime - RoomEnterTimestamp;
             }
@@ -170,6 +166,30 @@ namespace CommunityPatch
             else
             {
                 TickedLoading();
+            }
+        }
+        private static string GetFormattedTime(float time)
+        {
+            if (time == 0)
+            {
+                return string.Empty;
+            }
+            else if (time < 60)
+            {
+                return time.ToString("F3");
+            }
+            else if (time < 3600)
+            {
+                int minute = (int)(time / 60);
+                float second = time - minute * 60;
+                return $"{minute}:{second.ToString("F3").PadLeft(5, '0')}";
+            }
+            else
+            {
+                int hour = (int)(time / 3600);
+                int minute = (int)((time - hour * 3600) / 60);
+                float second = time - hour * 3600 - minute * 60;
+                return $"{hour}:{minute.ToString().PadLeft(2, '0')}:{second.ToString("F3").PadLeft(5, '0')}";
             }
         }
     }
