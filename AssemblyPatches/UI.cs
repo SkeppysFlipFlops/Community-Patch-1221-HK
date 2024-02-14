@@ -9,7 +9,7 @@ namespace CommunityPatch
         private static readonly Color WHITE = new(1, 1, 1, 1);
         private static readonly Vector2 __SIZE = new(200, 200);
         private static bool ConfigMenuOpen = false;
-        public static List<Selector> Selectors;
+        //public static List<Selector> Selectors;
         private static int row = 0;
         private static bool selecting = false;
 
@@ -48,7 +48,7 @@ namespace CommunityPatch
             }
         }
 
-        public class Selector(string text, int x, int y, int fontSize, Color color, KeyCodeRef keycode)
+        /*public class Selector(string text, int x, int y, int fontSize, Color color, KeyCodeRef keycode)
         {
             public string text = text;
             public int x = x, y = y;
@@ -61,7 +61,7 @@ namespace CommunityPatch
                 return new TextBoxData(BoolToText(selected, "-->") + text.ToLower() + " currently bound to: " + keycode.keycode.ToString(),
                     x, y, fontSize, color);
             }
-        }
+        }*/
 
         public static void ShowTextBox(TextBoxData data)
         {
@@ -96,7 +96,7 @@ namespace CommunityPatch
             GUI.matrix = oldMatrix;
         }
 
-        public static void Init()
+        /*public static void Init()
         {
             KeyValuePair<KeyCodeRef, string>[] controlsRef = CommunityPatch.Config.ControlRef();
             Selectors = [];
@@ -105,7 +105,7 @@ namespace CommunityPatch
                 int y = (i * 70) + 300;
                 Selectors.Add(new Selector(controlsRef[i].Value, 400, y, 30, Color.blue, controlsRef[i].Key));
             }
-        }
+        }*/
         public static void ShowGUI()
         {
 #if DEBUG
@@ -122,7 +122,7 @@ namespace CommunityPatch
                     Color.white));
 
 
-                if (ConfigMenuOpen)
+                /*if (ConfigMenuOpen)
                 {
                     ShowTextBox(new TextBoxData(
                         "Press tab while option selected to bind a key. escape to unbind.",
@@ -132,7 +132,7 @@ namespace CommunityPatch
                     {
                         ShowTextBox(selec.GetTextBox());
                     }
-                }
+                }*/
             }
             else
             {
@@ -159,7 +159,7 @@ namespace CommunityPatch
                1600, 20, 30,
                Color.white));
         }
-        private static void ChooseKey()
+        /*private static void ChooseKey()
         {
             foreach (KeyCode kcode in Enum.GetValues(typeof(KeyCode)))
             {
@@ -197,11 +197,11 @@ namespace CommunityPatch
                 }
             }
             Selectors[row].selected = true;
-        }
+        }*/
         public static void Update()
         {
             //open config menu if pressed bind
-            if (ControlsHelper.ShouldDoAction(CommunityPatch.Config.OpenConfigMenu.keycode,
+            /*if (ControlsHelper.ShouldDoAction(CommunityPatch.Config.OpenConfigMenu.keycode,
                 CommunityPatch.Config.OpenConfigMenuModifier.keycode))
                 ConfigMenuOpen = !ConfigMenuOpen;
 
@@ -211,7 +211,7 @@ namespace CommunityPatch
 
             if (Input.GetKeyDown(KeyCode.Tab)) selecting = true;
 
-            if (!selecting) MoveUpDown();
+            if (!selecting) MoveUpDown();*/
         }
     }
 }

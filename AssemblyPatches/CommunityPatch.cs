@@ -13,7 +13,7 @@ namespace CommunityPatch
             if (initialized) return;
             Config = ControlsHelper.LoadBindsFromFile();
             Timer2.Init();
-            UI.Init();
+            //UI.Init();
             AddLine("Initialized");
             initialized = true;
         }
